@@ -1,0 +1,25 @@
+import api from "./api";
+
+export async function getProducts(filters = {}) {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      params.append(key, value);
+    }
+  });
+
+  const queryString = params.toString();
+  const endpoint = queryString
+    ? `/product/get-all-product?${queryString}`
+    : "/product/get-all-product";
+
+  const res = await api.get(endpoint);
+
+  return res.data.products;
+}
+
+export async function getProductById(id) {
+  const res = await api.get(`/product/get-product/${id}`);
+  return res.data.product;
+}
