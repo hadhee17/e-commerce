@@ -1,5 +1,6 @@
-// src/pages/BuyNow.jsx
-import React, { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
+import { createOrder } from "../services/orderServices";
+
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
@@ -15,7 +16,6 @@ import { createCheckoutSession } from "../services/paymentService";
 import { loadStripe } from "@stripe/stripe-js";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
-const { user } = useAuth();
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -31,14 +31,14 @@ const BuyNow = () => {
   const [processing, setProcessing] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
+  const { user } = useAuth();
 
   // Check for success callback from Stripe
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const success = queryParams.get("success");
     const sessionId = queryParams.get("session_id");
 
-    if (success === "true" && sessionId) {
+    if (sessionId) {
       handlePurchaseSuccess(sessionId);
     }
   }, [location.search]);
@@ -53,7 +53,7 @@ const BuyNow = () => {
   useEffect(() => {
     fetchProduct();
   }, [id]);
-
+  const hasCreatedOrderRef = useRef(false);
   const fetchProduct = async () => {
     try {
       setLoading(true);
@@ -69,23 +69,29 @@ const BuyNow = () => {
 
   const handlePurchaseSuccess = async (sessionId) => {
     try {
-     
+      if (purchaseSuccess) return;
+
+      await createOrder({
+        product: id,
+      });
+
+      // ✅ Mark success FIRST (prevents double run)
       setPurchaseSuccess(true);
+
+      // ✅ Use SAFE values (no product dependency)
       setOrderDetails({
         orderNumber: `ORD-${Date.now()}`,
-        totalAmount: (product.price * quantity).toFixed(2),
+        totalAmount: "Paid",
         estimatedDelivery: new Date(
           Date.now() + 5 * 24 * 60 * 60 * 1000
         ).toLocaleDateString(),
       });
 
-      // Clear URL parameters
-      window.history.replaceState({}, "", `${window.location.pathname}`);
+      // ✅ Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
     } catch (error) {
-      console.error("Error confirming purchase:", error);
-      alert(
-        "There was an issue confirming your purchase. Please contact support."
-      );
+      console.error("Order creation failed:", error);
+      alert("Order creation failed. Please contact support.");
     }
   };
 
@@ -96,7 +102,7 @@ const BuyNow = () => {
       const lineItems = [
         {
           price_data: {
-            currency: "inr", // use same currency as backend
+            currency: "usd", // use same currency as backend
             product_data: {
               name: product.title,
               description: product.description,
@@ -126,7 +132,6 @@ const BuyNow = () => {
 
       const sessionData = await createCheckoutSession(checkoutData);
 
-   
       console.log("Redirecting to:", sessionData.url);
       window.location.href = sessionData.url;
     } catch (error) {

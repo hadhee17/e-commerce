@@ -12,7 +12,6 @@ import {
   Search,
   Menu,
   X,
-  Heart,
   LogOut,
 } from "lucide-react";
 
@@ -75,20 +74,6 @@ const Header = () => {
                 <Moon className="h-5 w-5 text-gray-600" />
               )}
             </button>
-
-            {/* Wishlist */}
-            <Link
-              to="/wishlist"
-              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="Wishlist"
-            >
-              <Heart className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
 
             {/* Cart */}
             <Link
@@ -210,16 +195,6 @@ const Header = () => {
                 )}
                 <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
               </button>
-
-              {/* Wishlist */}
-              <Link
-                to="/wishlist"
-                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <Heart className="h-5 w-5" />
-                <span>Wishlist ({wishlistCount})</span>
-              </Link>
 
               {/* Cart */}
               <Link

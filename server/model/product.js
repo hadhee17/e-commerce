@@ -22,14 +22,14 @@ const productSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      required: true,
+      // required: true,
     },
     rating: {
       type: Number,
     },
     seller: {
       type: mongoose.Schema.ObjectId,
-      ref: "Seller",
+      ref: "User",
     },
   },
   {

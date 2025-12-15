@@ -25,10 +25,18 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const response = await authService.login(email, password);
-      setUser(response.currentUser);
+      // 1️⃣ Login (sets cookie)
+      await authService.login(email, password);
+
+      // 2️⃣ Immediately fetch profile
+      const profileRes = await authService.getProfile();
+
+      // 3️⃣ Set user from profile (single source of truth)
+      setUser(profileRes.currentUser);
+
       return { success: true };
     } catch (error) {
+      setUser(null);
       return {
         success: false,
         error: error.response?.data?.message || "Login failed",
@@ -38,10 +46,14 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await authService.register(userData);
-      setUser(response.currentUser);
+      await authService.register(userData);
+
+      const profileRes = await authService.getProfile();
+      setUser(profileRes.currentUser);
+
       return { success: true };
     } catch (error) {
+      setUser(null);
       return {
         success: false,
         error: error.response?.data?.message || "Registration failed",

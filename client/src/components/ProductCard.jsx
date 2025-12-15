@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { ShoppingBag, Heart, Star } from "lucide-react";
+import { ShoppingBag, Star } from "lucide-react";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
@@ -34,7 +34,7 @@ const ProductCard = ({ product }) => {
         {/* Product Image */}
         <div className="relative overflow-hidden">
           <img
-            src={product.image}
+            src={product.image || null}
             alt={product.title}
             className="w-full h-48 object-contain group-hover:scale-105 transition-transform duration-300"
           />
@@ -45,20 +45,6 @@ const ProductCard = ({ product }) => {
               Out of Stock
             </span>
           )}
-
-          {/* Wishlist Button */}
-          <button
-            onClick={handleWishlist}
-            className={`absolute top-2 right-2 p-2 rounded-full transition-all ${
-              isWishlisted
-                ? "bg-red-500 text-white"
-                : "bg-white/90 text-gray-600 hover:bg-red-500 hover:text-white"
-            }`}
-          >
-            <Heart
-              className={`h-4 w-4 ${isWishlisted ? "fill-current" : ""}`}
-            />
-          </button>
         </div>
 
         {/* Product Info */}

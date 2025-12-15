@@ -96,7 +96,7 @@ const ProductDetail = () => {
           {/* Product Image */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-lg">
             <img
-              src={product.image}
+              src={product.image || null}
               alt={product.title}
               className="w-full h-96 object-contain rounded-lg"
             />

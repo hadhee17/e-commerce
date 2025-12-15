@@ -6,21 +6,17 @@ import { createCheckoutSession } from "../services/paymentService";
 import { loadStripe } from "@stripe/stripe-js";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { useAuth } from "../context/AuthContext";
-
-const { user } = useAuth();
-
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-
 const Payment = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [processing, setProcessing] = useState(false);
 
   const { product, quantity } = location.state || {};
 
   useEffect(() => {
-    // Redirect back if no product data
     if (!product) {
       navigate(`/product/${id}`);
     }
@@ -31,7 +27,6 @@ const Payment = () => {
     try {
       setProcessing(true);
 
-      // Build line items
       const lineItems = [
         {
           price_data: {
@@ -44,7 +39,7 @@ const Payment = () => {
                 productId: product._id,
               },
             },
-            unit_amount: Math.round(product.price * 100), // cents
+            unit_amount: Math.round(product.price * 100),
           },
           quantity: quantity,
         },
@@ -149,7 +144,6 @@ const Payment = () => {
                 </button>
               </div>
 
-              {/* Other payment methods can be added here */}
               <div className="mt-4 text-center">
                 <p className="text-gray-500 text-sm">
                   More payment options coming soon...
@@ -157,7 +151,6 @@ const Payment = () => {
               </div>
             </div>
 
-            {/* Security Assurance */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 Security & Privacy

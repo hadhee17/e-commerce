@@ -1,49 +1,54 @@
 const Order = require("../model/order");
 const AppError = require("../utils/appError");
+const Product = require("../model/product");
 
 exports.createOrder = async (req, res, next) => {
   try {
-    const { product, amount, paymentStatus } = req.body;
+    const { product } = req.body;
 
-    // Check for existing order with same details
+    if (!product) {
+      return next(new AppError("Product id is required", 400));
+    }
+
+    // 🔎 Fetch product (source of truth)
+    const productDoc = await Product.findById(product);
+    if (!productDoc) {
+      return next(new AppError("Product not found", 404));
+    }
+
+    // 🔒 Prevent accidental duplicate order (5 min window)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
     const existingOrder = await Order.findOne({
       user: req.user._id,
       product,
-      amount,
-      orderAt: {
-        $gte: new Date(Date.now() - 5 * 60 * 1000), // Last 5 minutes
-      },
-    });
+      orderAt: { $gte: fiveMinutesAgo },
+    }).populate("product");
 
     if (existingOrder) {
       return res.status(200).json({
         status: "success",
-        data: {
-          order: existingOrder,
-        },
+        data: { order: existingOrder },
       });
     }
 
+    // ✅ Create order
     const order = await Order.create({
       user: req.user._id,
-      product,
-      amount,
-      paymentStatus: paymentStatus || "paid",
-      orderAt: Date.now(),
+      product: productDoc._id,
+      amount: productDoc.price, // 💡 backend-controlled
+      paymentStatus: "paid",
     });
 
-    // Populate product details
     await order.populate("product");
 
     res.status(201).json({
       status: "success",
-      data: {
-        order,
-      },
+      data: { order },
     });
   } catch (err) {
     console.error("Order Creation Error:", err);
-    next(new AppError(err.message || "Failed to create order", 400));
+    next(new AppError(err, 400));
   }
 };
 
