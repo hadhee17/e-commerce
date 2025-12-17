@@ -15,6 +15,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const allowedOrigins = [
+  "https://e-commerce-eta-eight-87.vercel.app",
   "http://localhost:5173",
   //  // local Vite dev server
   // deployed frontend
